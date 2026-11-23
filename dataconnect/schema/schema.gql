@@ -1,0 +1,41 @@
+type User @table(key: "idNum") {
+  idNum: String! @unique
+  name: String!
+  role: Role! @default(value: STUDENT)
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+type Room @table(key: "roomId") {
+  roomId: String! @default(expr: "uuidV4()")
+  roomNumber: String!
+  isActive: Boolean! @default(value: true)
+}
+
+type Reservation @table(key: "resId") @index(fields: ["roomId", "startTime"]) {
+  resId: String! @default(expr: "uuidV4()")
+  room: Room! @ref(fields: ["roomId"], references: ["roomId"])
+  roomId: String!
+  user: User! @ref(fields: ["idNum"], references: ["idNum"])
+  idNum: String!
+  day: Date! @default(expr: "request.time")
+  startTime: Timestamp!
+  endTime: Timestamp!
+  status: ReservationStatus! @default(value: PENDING)
+  purpose: String!
+  rejectionReason: String
+  reviewedByUid: String
+  reviewedAt: Timestamp
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+enum ReservationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}

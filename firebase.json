@@ -1,0 +1,31 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "roomseek-233b5",
+          "appId": "1:994213219236:android:df6a162011fd3f0383cf31",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "roomseek-233b5",
+          "configurations": {
+            "android": "1:994213219236:android:df6a162011fd3f0383cf31",
+            "web": "1:994213219236:web:40c6c39f6b8f026a83cf31",
+            "windows": "1:994213219236:web:6a7c0116cd36188e83cf31"
+          }
+        }
+      }
+    }
+  },
+  "emulators": {
+    "dataconnect": {
+      "dataDir": "dataconnect/.dataconnect/pgliteData"
+    }
+  },
+  "dataconnect": {
+    "source": "dataconnect"
+  }
+}

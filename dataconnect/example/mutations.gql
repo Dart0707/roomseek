@@ -1,0 +1,62 @@
+mutation UpsertUser(
+  $idNum: String!
+  $name: String!
+  $role: Role!
+) @auth(level: USER) {
+  user_upsert(data: {
+    idNum: $idNum
+    name: $name
+    role: $role
+  })
+}
+
+mutation CreateReservation(
+  $roomId: String!
+  $idNum: String!
+  $day: Date!
+  $startTime: Timestamp!
+  $endTime: Timestamp!
+  $purpose: String!
+) @auth(level: USER) {
+  reservation_insert(data: {
+    roomId: $roomId
+    idNum: $idNum
+    day: $day
+    startTime: $startTime
+    endTime: $endTime
+    purpose: $purpose
+  })
+}
+
+mutation ApproveReservation($resId: String!)
+@auth(expr: "auth.token.admin == true") @transaction {
+  reservation_update(
+    key: { resId: $resId }
+    data: {
+      status: APPROVED
+      reviewedByUid_expr: "auth.uid"
+      reviewedAt_expr: "request.time"
+    }
+  )
+}
+
+mutation RejectReservation($resId: String!, $rejectionReason: String!)
+@auth(expr: "auth.token.admin == true") @transaction {
+  reservation_update(
+    key: { resId: $resId }
+    data: {
+      status: REJECTED
+      rejectionReason: $rejectionReason
+      reviewedByUid_expr: "auth.uid"
+      reviewedAt_expr: "request.time"
+    }
+  )
+}
+
+mutation CancelReservation($resId: String!)
+@auth(level: USER) @transaction {
+  reservation_update(
+    key: { resId: $resId }
+    data: { status: CANCELLED }
+  )
+}

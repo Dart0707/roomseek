@@ -1,0 +1,59 @@
+query ListRooms
+@auth(level: PUBLIC) {
+  rooms(where: { isActive: { eq: true } }, orderBy: [{ roomNumber: ASC }]) {
+    roomId
+    roomNumber
+  }
+}
+
+query ListTakenRooms($fromTime: Timestamp!, $toTime: Timestamp!, $day: Date!)
+@auth(level: PUBLIC) {
+  reservations(
+    where: {
+      day: { eq: $day }
+      startTime: { le: $toTime }
+      endTime: { ge: $fromTime }
+      status: { in: [APPROVED] }
+    }
+    orderBy: [{ startTime: ASC }]
+  ) {
+    resId
+    roomId
+    day
+    startTime
+    endTime
+    purpose
+  }
+}
+
+query ListMyReservations($idNum: String!)
+@auth(level: USER) {
+  reservations(
+    where: { idNum: { eq: $idNum } }
+    orderBy: [{ startTime: DESC }]
+  ) {
+    resId
+    roomId
+    day
+    startTime
+    endTime
+    status
+    purpose
+    rejectionReason
+  }
+}
+
+query ListPendingReservations
+@auth(expr: "auth.token.admin == true") {
+  reservations(
+    where: { status: { eq: PENDING } }
+    orderBy: [{ createdAt: ASC }]
+  ) {
+    resId
+    roomId
+    idNum
+    startTime
+    endTime
+    purpose
+  }
+}
