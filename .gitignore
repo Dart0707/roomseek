@@ -70,3 +70,10 @@ secrets*.json
 
 # Local emulator and generated database data
 /dataconnect/.dataconnect/
+
+
+node_modules/
+.env
+
+# Local executables
+/cloud-sql-proxy.exe

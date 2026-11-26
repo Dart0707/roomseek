@@ -1,15 +1,16 @@
 part of 'generated.dart';
 
 class CreateReservationVariablesBuilder {
-  String roomId;
+  String schedId;
   String idNum;
-  DateTime day;
-  Timestamp startTime;
-  Timestamp endTime;
-  String purpose;
+  Optional<ReservationStatus> _status = Optional.optional((data) => ReservationStatus.values.byName(data), enumSerializer);
 
-  final FirebaseDataConnect _dataConnect;
-  CreateReservationVariablesBuilder(this._dataConnect, {required  this.roomId,required  this.idNum,required  this.day,required  this.startTime,required  this.endTime,required  this.purpose,});
+  final FirebaseDataConnect _dataConnect;  CreateReservationVariablesBuilder status(ReservationStatus? t) {
+   _status.value = t;
+   return this;
+  }
+
+  CreateReservationVariablesBuilder(this._dataConnect, {required  this.schedId,required  this.idNum,});
   Deserializer<CreateReservationData> dataDeserializer = (dynamic json)  => CreateReservationData.fromJson(jsonDecode(json));
   Serializer<CreateReservationVariables> varsSerializer = (CreateReservationVariables vars) => jsonEncode(vars.toJson());
   Future<OperationResult<CreateReservationData, CreateReservationVariables>> execute() {
@@ -17,7 +18,7 @@ class CreateReservationVariablesBuilder {
   }
 
   MutationRef<CreateReservationData, CreateReservationVariables> ref() {
-    CreateReservationVariables vars= CreateReservationVariables(roomId: roomId,idNum: idNum,day: day,startTime: startTime,endTime: endTime,purpose: purpose,);
+    CreateReservationVariables vars= CreateReservationVariables(schedId: schedId,idNum: idNum,status: _status,);
     return _dataConnect.mutation("CreateReservation", dataDeserializer, varsSerializer, vars);
   }
 }
@@ -26,7 +27,7 @@ class CreateReservationVariablesBuilder {
 class CreateReservationReservationInsert {
   final String resId;
   CreateReservationReservationInsert.fromJson(dynamic json):
-  
+
   resId = nativeFromJson<String>(json['resId']);
   @override
   bool operator ==(Object other) {
@@ -39,11 +40,11 @@ class CreateReservationReservationInsert {
 
     final CreateReservationReservationInsert otherTyped = other as CreateReservationReservationInsert;
     return resId == otherTyped.resId;
-    
+
   }
   @override
   int get hashCode => resId.hashCode;
-  
+
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -60,7 +61,7 @@ class CreateReservationReservationInsert {
 class CreateReservationData {
   final CreateReservationReservationInsert reservation_insert;
   CreateReservationData.fromJson(dynamic json):
-  
+
   reservation_insert = CreateReservationReservationInsert.fromJson(json['reservation_insert']);
   @override
   bool operator ==(Object other) {
@@ -73,11 +74,11 @@ class CreateReservationData {
 
     final CreateReservationData otherTyped = other as CreateReservationData;
     return reservation_insert == otherTyped.reservation_insert;
-    
+
   }
   @override
   int get hashCode => reservation_insert.hashCode;
-  
+
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -92,21 +93,22 @@ class CreateReservationData {
 
 @immutable
 class CreateReservationVariables {
-  final String roomId;
+  final String schedId;
   final String idNum;
-  final DateTime day;
-  final Timestamp startTime;
-  final Timestamp endTime;
-  final String purpose;
+  late final Optional<ReservationStatus>status;
   @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
   CreateReservationVariables.fromJson(Map<String, dynamic> json):
-  
-  roomId = nativeFromJson<String>(json['roomId']),
-  idNum = nativeFromJson<String>(json['idNum']),
-  day = nativeFromJson<DateTime>(json['day']),
-  startTime = Timestamp.fromJson(json['startTime']),
-  endTime = Timestamp.fromJson(json['endTime']),
-  purpose = nativeFromJson<String>(json['purpose']);
+
+  schedId = nativeFromJson<String>(json['schedId']),
+  idNum = nativeFromJson<String>(json['idNum']) {
+
+
+
+
+    status = Optional.optional((data) => ReservationStatus.values.byName(data), enumSerializer);
+    status.value = json['status'] == null ? null : ReservationStatus.values.byName(json['status']);
+
+  }
   @override
   bool operator ==(Object other) {
     if(identical(this, other)) {
@@ -117,36 +119,29 @@ class CreateReservationVariables {
     }
 
     final CreateReservationVariables otherTyped = other as CreateReservationVariables;
-    return roomId == otherTyped.roomId && 
-    idNum == otherTyped.idNum && 
-    day == otherTyped.day && 
-    startTime == otherTyped.startTime && 
-    endTime == otherTyped.endTime && 
-    purpose == otherTyped.purpose;
-    
+    return schedId == otherTyped.schedId &&
+    idNum == otherTyped.idNum &&
+    status == otherTyped.status;
+
   }
   @override
-  int get hashCode => Object.hashAll([roomId.hashCode, idNum.hashCode, day.hashCode, startTime.hashCode, endTime.hashCode, purpose.hashCode]);
-  
+  int get hashCode => Object.hashAll([schedId.hashCode, idNum.hashCode, status.hashCode]);
+
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    json['roomId'] = nativeToJson<String>(roomId);
+    json['schedId'] = nativeToJson<String>(schedId);
     json['idNum'] = nativeToJson<String>(idNum);
-    json['day'] = nativeToJson<DateTime>(day);
-    json['startTime'] = startTime.toJson();
-    json['endTime'] = endTime.toJson();
-    json['purpose'] = nativeToJson<String>(purpose);
+    if(status.state == OptionalState.set) {
+      json['status'] = status.toJson();
+    }
     return json;
   }
 
   CreateReservationVariables({
-    required this.roomId,
+    required this.schedId,
     required this.idNum,
-    required this.day,
-    required this.startTime,
-    required this.endTime,
-    required this.purpose,
+    required this.status,
   });
 }
 

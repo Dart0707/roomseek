@@ -1,62 +1,36 @@
-mutation UpsertUser(
-  $idNum: String!
-  $name: String!
-  $role: Role!
-) @auth(level: USER) {
-  user_upsert(data: {
-    idNum: $idNum
-    name: $name
-    role: $role
-  })
+mutation UpsertUser($idNum: String!, $name: String!, $college: String!, $role: Role!)
+@auth(level: PUBLIC, insecureReason: "User creation is public for this prototype and must be restricted before production.") {
+  user_upsert(data: { idNum: $idNum, name: $name, college: $college, role: $role })
 }
+
+
+mutation CreateSchedule(
+  $room: String!
+  $day: String!
+  $fromTime: String!
+  $toTime: String!
+) @auth(level: PUBLIC, insecureReason: "Schedule creation is public for this prototype and must be restricted to administrators before production.") {
+  schedule_insert(
+    data: {
+      room: $room
+      day: $day
+      fromTime: $fromTime
+      toTime: $toTime
+    }
+  )
+}
+
 
 mutation CreateReservation(
-  $roomId: String!
+  $schedId: String!
   $idNum: String!
-  $day: Date!
-  $startTime: Timestamp!
-  $endTime: Timestamp!
-  $purpose: String!
-) @auth(level: USER) {
-  reservation_insert(data: {
-    roomId: $roomId
-    idNum: $idNum
-    day: $day
-    startTime: $startTime
-    endTime: $endTime
-    purpose: $purpose
-  })
-}
-
-mutation ApproveReservation($resId: String!)
-@auth(expr: "auth.token.admin == true") @transaction {
-  reservation_update(
-    key: { resId: $resId }
+  $status: ReservationStatus
+) @auth(level: PUBLIC, insecureReason: "Reservation creation is public for this prototype and must be restricted to authenticated users before production.") {
+  reservation_insert(
     data: {
-      status: APPROVED
-      reviewedByUid_expr: "auth.uid"
-      reviewedAt_expr: "request.time"
+      schedId: $schedId
+      idNum: $idNum
+      status: $status
     }
-  )
-}
-
-mutation RejectReservation($resId: String!, $rejectionReason: String!)
-@auth(expr: "auth.token.admin == true") @transaction {
-  reservation_update(
-    key: { resId: $resId }
-    data: {
-      status: REJECTED
-      rejectionReason: $rejectionReason
-      reviewedByUid_expr: "auth.uid"
-      reviewedAt_expr: "request.time"
-    }
-  )
-}
-
-mutation CancelReservation($resId: String!)
-@auth(level: USER) @transaction {
-  reservation_update(
-    key: { resId: $resId }
-    data: { status: CANCELLED }
   )
 }

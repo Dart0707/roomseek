@@ -1,7 +1,10 @@
 type User @table(key: "idNum") {
   idNum: String! @unique
+  email: String @unique
+  passwordHash: String
   name: String!
-  role: Role! @default(value: STUDENT)
+  college: String!
+  role: Role!
 }
 
 enum Role {
@@ -10,32 +13,26 @@ enum Role {
   ADMIN
 }
 
-type Room @table(key: "roomId") {
-  roomId: String! @default(expr: "uuidV4()")
-  roomNumber: String!
-  isActive: Boolean! @default(value: true)
+type Schedule @table(key: "schedId") {
+  schedId: String! @default(expr: "uuidV4()")
+  room: String!
+  day: String! @default(value: "Monday")
+  fromTime: String!
+  toTime: String!
+  isOccupied: Boolean! @default(value: false)
 }
 
-type Reservation @table(key: "resId") @index(fields: ["roomId", "startTime"]) {
+type Reservation @table(key: "resId") {
   resId: String! @default(expr: "uuidV4()")
-  room: Room! @ref(fields: ["roomId"], references: ["roomId"])
-  roomId: String!
+  schedule: Schedule!
+    @ref(fields: ["schedId"], references: ["schedId"])
+  schedId: String!
   user: User! @ref(fields: ["idNum"], references: ["idNum"])
   idNum: String!
-  day: Date! @default(expr: "request.time")
-  startTime: Timestamp!
-  endTime: Timestamp!
   status: ReservationStatus! @default(value: PENDING)
-  purpose: String!
-  rejectionReason: String
-  reviewedByUid: String
-  reviewedAt: Timestamp
-  createdAt: Timestamp! @default(expr: "request.time")
 }
-
 enum ReservationStatus {
   PENDING
   APPROVED
   REJECTED
-  CANCELLED
 }

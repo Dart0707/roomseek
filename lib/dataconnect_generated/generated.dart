@@ -6,90 +6,79 @@ import 'package:flutter/foundation.dart';
 
 part 'upsert_user.dart';
 
+part 'create_schedule.dart';
+
 part 'create_reservation.dart';
 
-part 'approve_reservation.dart';
+part 'list_users.dart';
 
-part 'reject_reservation.dart';
+part 'list_schedules.dart';
 
-part 'cancel_reservation.dart';
-
-part 'list_rooms.dart';
-
-part 'list_taken_rooms.dart';
-
-part 'list_my_reservations.dart';
-
-part 'list_pending_reservations.dart';
+part 'list_reservations.dart';
 
 
 
   enum ReservationStatus {
-    
+
       PENDING,
-    
+
       APPROVED,
-    
+
       REJECTED,
-    
-      CANCELLED,
-    
+
   }
-  
+
   String reservationStatusSerializer(EnumValue<ReservationStatus> e) {
     return e.stringValue;
   }
   EnumValue<ReservationStatus> reservationStatusDeserializer(dynamic data) {
     switch (data) {
-      
+
       case 'PENDING':
         return const Known(ReservationStatus.PENDING);
-      
+
       case 'APPROVED':
         return const Known(ReservationStatus.APPROVED);
-      
+
       case 'REJECTED':
         return const Known(ReservationStatus.REJECTED);
-      
-      case 'CANCELLED':
-        return const Known(ReservationStatus.CANCELLED);
-      
+
       default:
         return Unknown(data);
     }
   }
-  
+
 
   enum Role {
-    
+
       STUDENT,
-    
+
       TEACHER,
-    
+
       ADMIN,
-    
+
   }
-  
+
   String roleSerializer(EnumValue<Role> e) {
     return e.stringValue;
   }
   EnumValue<Role> roleDeserializer(dynamic data) {
     switch (data) {
-      
+
       case 'STUDENT':
         return const Known(Role.STUDENT);
-      
+
       case 'TEACHER':
         return const Known(Role.TEACHER);
-      
+
       case 'ADMIN':
         return const Known(Role.ADMIN);
-      
+
       default:
         return Unknown(data);
     }
   }
-  
+
 
 
 
@@ -104,7 +93,7 @@ String enumSerializer(Enum e) {
 sealed class EnumValue<T extends Enum> {
   const EnumValue();
 
-  
+
 
   /// The string representation of the value.
   String get stringValue;
@@ -143,52 +132,37 @@ class Unknown extends EnumValue<Never> {
 }
 
 class ExampleConnector {
-  
-  
-  UpsertUserVariablesBuilder upsertUser ({required String idNum, required String name, required Role role, }) {
-    return UpsertUserVariablesBuilder(dataConnect, idNum: idNum,name: name,role: role,);
+
+
+  UpsertUserVariablesBuilder upsertUser ({required String idNum, required String name, required String college, required Role role, }) {
+    return UpsertUserVariablesBuilder(dataConnect, idNum: idNum,name: name,college: college,role: role,);
   }
-  
-  
-  CreateReservationVariablesBuilder createReservation ({required String roomId, required String idNum, required DateTime day, required Timestamp startTime, required Timestamp endTime, required String purpose, }) {
-    return CreateReservationVariablesBuilder(dataConnect, roomId: roomId,idNum: idNum,day: day,startTime: startTime,endTime: endTime,purpose: purpose,);
+
+
+  CreateScheduleVariablesBuilder createSchedule ({required String room, required DateTime date, required Timestamp fromTime, required Timestamp toTime, }) {
+    return CreateScheduleVariablesBuilder(dataConnect, room: room,date: date,fromTime: fromTime,toTime: toTime,);
   }
-  
-  
-  ApproveReservationVariablesBuilder approveReservation ({required String resId, }) {
-    return ApproveReservationVariablesBuilder(dataConnect, resId: resId,);
+
+
+  CreateReservationVariablesBuilder createReservation ({required String schedId, required String idNum, }) {
+    return CreateReservationVariablesBuilder(dataConnect, schedId: schedId,idNum: idNum,);
   }
-  
-  
-  RejectReservationVariablesBuilder rejectReservation ({required String resId, required String rejectionReason, }) {
-    return RejectReservationVariablesBuilder(dataConnect, resId: resId,rejectionReason: rejectionReason,);
+
+
+  ListUsersVariablesBuilder listUsers () {
+    return ListUsersVariablesBuilder(dataConnect, );
   }
-  
-  
-  CancelReservationVariablesBuilder cancelReservation ({required String resId, }) {
-    return CancelReservationVariablesBuilder(dataConnect, resId: resId,);
+
+
+  ListSchedulesVariablesBuilder listSchedules () {
+    return ListSchedulesVariablesBuilder(dataConnect, );
   }
-  
-  
-  ListRoomsVariablesBuilder listRooms () {
-    return ListRoomsVariablesBuilder(dataConnect, );
+
+
+  ListReservationsVariablesBuilder listReservations () {
+    return ListReservationsVariablesBuilder(dataConnect, );
   }
-  
-  
-  ListTakenRoomsVariablesBuilder listTakenRooms ({required Timestamp fromTime, required Timestamp toTime, required DateTime day, }) {
-    return ListTakenRoomsVariablesBuilder(dataConnect, fromTime: fromTime,toTime: toTime,day: day,);
-  }
-  
-  
-  ListMyReservationsVariablesBuilder listMyReservations ({required String idNum, }) {
-    return ListMyReservationsVariablesBuilder(dataConnect, idNum: idNum,);
-  }
-  
-  
-  ListPendingReservationsVariablesBuilder listPendingReservations () {
-    return ListPendingReservationsVariablesBuilder(dataConnect, );
-  }
-  
+
 
   static ConnectorConfig connectorConfig = ConnectorConfig(
     'asia-southeast1',
@@ -198,18 +172,18 @@ class ExampleConnector {
 
   ExampleConnector({required this.dataConnect});
   static ExampleConnector get instance {
-    
+
     CacheSettings cacheSettings = CacheSettings(
       maxAge: Duration(milliseconds:0),
       storage: CacheStorage.persistent,
     );
-    
+
     return ExampleConnector(
         dataConnect: FirebaseDataConnect.instanceFor(
             connectorConfig: connectorConfig,
-            
+
             cacheSettings: cacheSettings,
-            
+
             sdkType: CallerSDKType.generated));
   }
 
