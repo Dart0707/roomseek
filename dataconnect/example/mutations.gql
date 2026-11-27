@@ -5,14 +5,14 @@ mutation UpsertUser($idNum: String!, $name: String!, $college: String!, $role: R
 
 
 mutation CreateSchedule(
-  $room: String!
+  $roomId: String!
   $day: String!
   $fromTime: String!
   $toTime: String!
 ) @auth(level: PUBLIC, insecureReason: "Schedule creation is public for this prototype and must be restricted to administrators before production.") {
   schedule_insert(
     data: {
-      room: $room
+      roomId: $roomId
       day: $day
       fromTime: $fromTime
       toTime: $toTime
@@ -24,13 +24,29 @@ mutation CreateSchedule(
 mutation CreateReservation(
   $schedId: String!
   $idNum: String!
+  $reservationDate: Date!
   $status: ReservationStatus
 ) @auth(level: PUBLIC, insecureReason: "Reservation creation is public for this prototype and must be restricted to authenticated users before production.") {
   reservation_insert(
     data: {
       schedId: $schedId
       idNum: $idNum
+      reservationDate: $reservationDate
       status: $status
+    }
+  )
+}
+
+mutation CreateRoom(
+  $roomNumber: String!
+  $building: String!
+  $floor: Int!
+) @auth(level: PUBLIC, insecureReason: "Room creation is public for this prototype and must be restricted to administrators before production.") {
+  room_insert(
+    data: {
+      roomNumber: $roomNumber
+      building: $building
+      floor: $floor
     }
   )
 }

@@ -60,18 +60,149 @@ server.get("/api/users", async (req, res) => {
     }
 });
 
-// Get all room schedules
+
+// Get all rooms
+server.get("/api/rooms", async (req, res) => {
+    try {
+        const result = await dc.executeGraphqlRead(`
+            query {
+                rooms {
+                    roomId
+                    roomNumber
+                    building
+                    floor
+                }
+            }
+        `);
+
+        res.json(result.data);
+
+    } catch (error) {
+        console.error("Room retrieval failed:", error);
+
+        res.status(500).json({
+            message: "Failed to retrieve rooms."
+        });
+    }
+});
+
+
+// Create a new room
+server.post("/api/rooms", async (req, res) => {
+    try {
+        const { roomNumber, building, floor } = req.body;
+
+        if (!roomNumber || !building || floor == null) {
+            return res.status(400).json({
+                message: "Please provide all room details."
+            });
+        }
+
+        // Check if room already exists
+        const existingRoom = await dc.executeGraphqlRead(`
+            query FindRoom($roomNumber: String!) {
+                rooms(where: {
+                    roomNumber: { eq: $roomNumber }
+                }) {
+                    roomId
+                }
+            }
+        `, {
+            variables: { roomNumber }
+        });
+
+        if (existingRoom.data?.rooms?.length > 0) {
+            return res.status(409).json({
+                message: "Room already exists."
+            });
+        }
+
+        const mutation = `
+            mutation CreateRoom(
+                $roomNumber: String!
+                $building: String!
+                $floor: Int!
+            ) {
+                room_insert(data: {
+                    roomNumber: $roomNumber
+                    building: $building
+                    floor: $floor
+                })
+            }
+        `;
+
+        await dc.executeGraphql(mutation, {
+            variables: {
+                roomNumber: roomNumber.trim(),
+                building: building.trim(),
+                floor: Number(floor)
+            }
+        });
+
+        res.status(201).json({
+            message: "Room created successfully!",
+            room: {
+                roomNumber: roomNumber.trim(),
+                building: building.trim(),
+                floor: Number(floor)
+            }
+        });
+
+    } catch (error) {
+        console.error("Room creation failed:", error);
+
+        res.status(500).json({
+            message: "Failed to create room."
+        });
+    }
+});
+
+// Delete a room schedule
+server.delete("/api/schedules/:schedId", async (req, res) => {
+    try {
+        const { schedId } = req.params;
+
+        const mutation = `
+            mutation DeleteSchedule($schedId: String!) {
+                schedule_delete(key: { schedId: $schedId })
+            }
+        `;
+
+        await dc.executeGraphql(mutation, {
+            variables: { schedId }
+        });
+
+        res.json({
+            message: "Schedule deleted successfully!",
+            schedId
+        });
+
+    } catch (error) {
+        console.error("Schedule deletion failed:", error);
+
+        res.status(500).json({
+            message: "Failed to delete schedule."
+        });
+    }
+});
+
+
+// Get all room schedules with room details
 server.get("/api/schedules", async (req, res) => {
     try {
         const result = await dc.executeGraphqlRead(`
             query {
                 schedules {
                     schedId
-                    room
+                    roomId
+                    roomInfo {
+                        roomNumber
+                        building
+                        floor
+                    }
                     day
                     fromTime
                     toTime
-                    isOccupied
                 }
             }
         `);
@@ -82,44 +213,66 @@ server.get("/api/schedules", async (req, res) => {
         console.error("Schedule retrieval failed:", error);
 
         res.status(500).json({
-            message: "Failed to retrieve room schedules",
+            message: "Failed to retrieve room schedules"
         });
     }
 });
 
 // Create a new room schedule
+// Create a new room schedule
 server.post("/api/schedules", async (req, res) => {
     try {
-        const { room, day, fromTime, toTime } = req.body;
+        const { roomId, day, fromTime, toTime } = req.body;
 
-        // Validate required fields
-        if (!room || !day || !fromTime || !toTime) {
+        if (!roomId || !day || !fromTime || !toTime) {
             return res.status(400).json({
                 message: "Please provide all schedule details."
             });
         }
 
+        // Verify that the room exists
+        const roomResult = await dc.executeGraphqlRead(`
+            query FindRoom($roomId: String!) {
+                rooms(where: {
+                    roomId: { eq: $roomId }
+                }) {
+                    roomId
+                    roomNumber
+                    building
+                    floor
+                }
+            }
+        `, {
+            variables: { roomId }
+        });
+
+        const room = roomResult.data.rooms[0];
+
+        if (!room) {
+            return res.status(404).json({
+                message: "Room not found."
+            });
+        }
+
         const mutation = `
             mutation CreateSchedule(
-                $room: String!
+                $roomId: String!
                 $day: String!
                 $fromTime: String!
                 $toTime: String!
             ) {
-                schedule_insert(
-                    data: {
-                        room: $room
-                        day: $day
-                        fromTime: $fromTime
-                        toTime: $toTime
-                    }
-                )
+                schedule_insert(data: {
+                    roomId: $roomId
+                    day: $day
+                    fromTime: $fromTime
+                    toTime: $toTime
+                })
             }
         `;
 
-        const result = await dc.executeGraphql(mutation, {
+        await dc.executeGraphql(mutation, {
             variables: {
-                room,
+                roomId,
                 day,
                 fromTime,
                 toTime
@@ -132,8 +285,7 @@ server.post("/api/schedules", async (req, res) => {
                 room,
                 day,
                 fromTime,
-                toTime,
-                isOccupied: false
+                toTime
             }
         });
 
@@ -145,7 +297,6 @@ server.post("/api/schedules", async (req, res) => {
         });
     }
 });
-
 
 
 
@@ -327,7 +478,31 @@ server.post("/api/login", async (req, res) => {
     }
 });
 
+// Get all reservations (temporary inspection endpoint)
+server.get("/api/reservations", async (req, res) => {
+    try {
+        const result = await dc.executeGraphqlRead(`
+            query {
+                reservations {
+                    resId
+                    schedId
+                    idNum
+                    reservationDate
+                    status
+                }
+            }
+        `);
 
+        res.json(result.data);
+
+    } catch (error) {
+        console.error("Reservation retrieval failed:", error);
+
+        res.status(500).json({
+            message: "Failed to retrieve reservations"
+        });
+    }
+});
 
 // Start server
 const PORT = process.env.PORT || 5000;

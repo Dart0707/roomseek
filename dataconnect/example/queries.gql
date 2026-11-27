@@ -1,3 +1,4 @@
+
 query ListUsers
 @auth(level: PUBLIC, insecureReason: "Public user directory access is intentional for this prototype.") {
   users {
@@ -9,14 +10,18 @@ query ListUsers
 }
 
 query ListSchedules
-@auth(level: PUBLIC, insecureReason: "Room schedules are intentionally public for availability lookup.") {
+@auth(level: PUBLIC, insecureReason: "Schedule retrieval is public for this prototype and must be restricted to authorized users before production.") {
   schedules {
     schedId
-    room
+    roomId
+    roomInfo {
+      roomNumber
+      building
+      floor
+    }
     day
     fromTime
     toTime
-    isOccupied
   }
 }
 
@@ -26,6 +31,7 @@ query ListReservations
     resId
     schedId
     idNum
+    reservationDate
     status
   }
 }

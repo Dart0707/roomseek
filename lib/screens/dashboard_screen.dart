@@ -1,246 +1,78 @@
 import 'package:flutter/material.dart';
 import 'schedule_screen.dart';
+import 'profile_screen.dart';
+// import 'home_screen.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   final Map<String, dynamic> user;
 
   const DashboardScreen({super.key, required this.user});
 
   @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  int _selectedIndex = 1; // Defaults to the middle Schedule screen
+
+  @override
   Widget build(BuildContext context) {
-    const navy = Color(0xFF172554);
-    const blue = Color(0xFF2563EB);
+    final List<Widget> pages = [
+      const Center(child: Text('Home Page')), // Replace with HomeScreen(user: widget.user)
+      const ScheduleScreen(),
+      ProfileScreen(user: widget.user), // <-- Removed 'const' here
+    ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FB),
-      appBar: AppBar(
-        backgroundColor: navy,
-        foregroundColor: Colors.white,
-        title: const Text(
-          'RoomSeek',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Logout',
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/login',
-                (route) => false,
-              );
-            },
-          ),
-        ],
+      extendBody: true,
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: pages,
       ),
-
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 12),
-
-            const Text(
-              'Welcome back,',
-              style: TextStyle(fontSize: 17, color: Colors.grey),
-            ),
-
-            const SizedBox(height: 5),
-
-            Text(
-              user['name'] ?? 'Student',
-              style: const TextStyle(
-                fontSize: 27,
-                fontWeight: FontWeight.bold,
-                color: navy,
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+        child: Container(
+          height: 60,
+          decoration: BoxDecoration(
+            color: const Color(0xFF1C1C1E),
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // User Profile Card
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: navy,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Row(
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: Colors.white,
-                        child: Icon(Icons.person, color: navy, size: 28),
-                      ),
-                      SizedBox(width: 12),
-                      Text(
-                        'STUDENT PROFILE',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 22),
-
-                  _profileDetail('Student ID', user['idNum']),
-
-                  _profileDetail('College', user['college']),
-
-                  _profileDetail('Email Address', user['email']),
-
-                  _profileDetail('Account Role', user['role']),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            const Text(
-              'Explore RoomSeek',
-              style: TextStyle(
-                fontSize: 21,
-                fontWeight: FontWeight.bold,
-                color: navy,
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            // Feature Cards
-            Row(
-              children: [
-                Expanded(
-                  child: _featureCard(
-                    icon: Icons.meeting_room_outlined,
-                    title: 'Room Schedules',
-                    description: 'View available rooms',
-                    color: blue,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ScheduleScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-                const SizedBox(width: 14),
-
-                Expanded(
-                  child: _featureCard(
-                    icon: Icons.event_available_outlined,
-                    title: 'Reservations',
-                    description: 'Manage your bookings',
-                    color: Colors.teal,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 25),
-
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: Colors.black12),
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Coming Soon',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      color: navy,
-                    ),
-                  ),
-                  SizedBox(height: 6),
-                  Text(
-                    'Room searching and reservation features '
-                    'will be available here.',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildNavItem(icon: Icons.home_outlined, index: 0),
+              _buildNavItem(icon: Icons.calendar_today_outlined, index: 1),
+              _buildNavItem(icon: Icons.person_outline, index: 2),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _profileDetail(String label, dynamic value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white70, fontSize: 12),
-          ),
-          const SizedBox(height: 3),
-          Text(
-            value?.toString() ?? 'Not available',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _featureCard({
-    required IconData icon,
-    required String title,
-    required String description,
-    required Color color,
-    VoidCallback? onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(15),
-      child: Container(
-        height: 155,
-        padding: const EdgeInsets.all(16),
+  Widget _buildNavItem({required IconData icon, required int index}) {
+    final isSelected = _selectedIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedIndex = index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: isSelected ? 105 : 54,
+        height: 44,
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Colors.black12),
+          color: isSelected ? const Color(0xFFB48A18) : Colors.transparent,
+          borderRadius: BorderRadius.circular(22),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: color, size: 32),
-            const Spacer(),
-            Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-            const SizedBox(height: 5),
-            Text(
-              description,
-              style: const TextStyle(color: Colors.grey, fontSize: 12),
-            ),
-          ],
+        child: Icon(
+          icon,
+          size: 22,
+          color: isSelected ? const Color(0xFFFACC15) : const Color(0xFF9CA3AF),
         ),
       ),
     );

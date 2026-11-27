@@ -1,3 +1,4 @@
+
 type User @table(key: "idNum") {
   idNum: String! @unique
   email: String @unique
@@ -13,24 +14,42 @@ enum Role {
   ADMIN
 }
 
+type Room @table(key: "roomId") {
+  roomId: String! @default(expr: "uuidV4()")
+  roomNumber: String!
+  building: String!
+  floor: Int!
+}
+
 type Schedule @table(key: "schedId") {
   schedId: String! @default(expr: "uuidV4()")
-  room: String!
-  day: String! @default(value: "Monday")
+
+  roomInfo: Room!
+    @ref(fields: ["roomId"], references: ["roomId"])
+  roomId: String!
+
+  day: String!
   fromTime: String!
   toTime: String!
-  isOccupied: Boolean! @default(value: false)
 }
 
 type Reservation @table(key: "resId") {
   resId: String! @default(expr: "uuidV4()")
+
   schedule: Schedule!
     @ref(fields: ["schedId"], references: ["schedId"])
   schedId: String!
-  user: User! @ref(fields: ["idNum"], references: ["idNum"])
+
+  user: User!
+    @ref(fields: ["idNum"], references: ["idNum"])
   idNum: String!
+
+  # New field - specific calendar date
+  reservationDate: Date!
+
   status: ReservationStatus! @default(value: PENDING)
 }
+
 enum ReservationStatus {
   PENDING
   APPROVED
